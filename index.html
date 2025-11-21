@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Faça seu pedido pelo WhatsApp</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: #ffffff;
+      padding: 24px;
+      max-width: 520px;
+      width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    p.subtitulo {
+      font-size: 0.9rem;
+      color: #555;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 14px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 0.95rem;
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 999px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: #25d366; /* cor do WhatsApp */
+      color: #fff;
+      transition: transform 0.1s ease, box-shadow 0.1s ease,
+        background 0.1s ease;
+    }
+
+    button:hover {
+      background: #1ebe5d;
+      box-shadow: 0 4px 10px rgba(37, 211, 102, 0.4);
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    .aviso {
+      font-size: 0.8rem;
+      color: #777;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .obrigatorio {
+      color: #d00;
+    }
+
+    .campo-oculto {
+      display: none;
+    }
+
+    small {
+      color: #777;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Faça seu pedido</h1>
+    <p class="subtitulo">Preencha os dados e envie seu pedido direto no WhatsApp.</p>
+
+    <form id="pedidoForm" onsubmit="enviarWhatsApp(event)">
+      <label for="nome">
+        Nome completo <span class="obrigatorio">*</span>
+      </label>
+      <input
+        type="text"
+        id="nome"
+        placeholder="Seu nome"
+        required
+      />
+
+      <label for="telefone">
+        Telefone (com DDD) <span class="obrigatorio">*</span>
+      </label>
+      <input
+        type="tel"
+        id="telefone"
+        placeholder="(11) 99999-9999"
+        required
+      />
+
+      <!-- Produto -->
+      <label for="produto">
+        Produto <span class="obrigatorio">*</span>
+      </label>
+      <select id="produto" required>
+        <option value="">Selecione</option>
+        <option value="Pão de bolinha doce">Pão de bolinha doce</option>
+        <option value="Pão de bolinha salgado">Pão de bolinha salgado</option>
+        <option value="Outro (descrever nas observações)">
+          Outro (descrever nas observações)
+        </option>
+      </select>
+
+      <!-- Sabor (preenchido dinamicamente) -->
+      <label for="sabor">
+        Sabor <span class="obrigatorio">*</span>
+      </label>
+      <select id="sabor" disabled>
+        <option value="">Selecione o produto primeiro</option>
+      </select>
+
+      <label for="quantidade">
+        Quantidade <span class="obrigatorio">*</span>
+      </label>
+      <input
+        type="number"
+        id="quantidade"
+        placeholder="Ex: 30 unidades"
+        min="1"
+        required
+      />
+
+      <!-- Forma de recebimento -->
+      <label for="forma">
+        Como você quer receber? <span class="obrigatorio">*</span>
+      </label>
+      <select id="forma" required>
+        <option value="">Selecione</option>
+        <option value="retirada">Retirada na loja</option>
+        <option value="entrega">Entrega</option>
+      </select>
+
+      <!-- Retirada: unidade -->
+      <div id="campo-retirada" class="campo-oculto">
+        <label for="unidade">
+          Unidade para retirada <span class="obrigatorio">*</span>
+        </label>
+        <select id="unidade">
+          <option value="">Selecione a unidade</option>
+          <option value="Matriz">Matriz</option>
+          <option value="Vila Nova">Vila Nova</option>
+        </select>
+      </div>
+
+      <!-- Entrega: endereço -->
+      <div id="campo-entrega" class="campo-oculto">
+        <label for="endereco">
+          Endereço para entrega <span class="obrigatorio">*</span>
+        </label>
+        <textarea
+          id="endereco"
+          placeholder="Rua, número, bairro, complemento/ponto de referência"
+        ></textarea>
+      </div>
+
+      <label for="data">
+        Data desejada para retirada/entrega <span class="obrigatorio">*</span><br>
+        <small>(Pedidos com no mínimo 1 dia de antecedência)</small>
+      </label>
+      <input type="date" id="data" required />
+
+      <label for="horario">
+        Horário aproximado <span class="obrigatorio">*</span><br>
+        <small>(entre 07:30 e 20:00)</small>
+      </label>
+      <input
+        type="time"
+        id="horario"
+        required
+        min="07:30"
+        max="20:00"
+      />
+
+      <label for="observacoes">Observações</label>
+      <textarea
+        id="observacoes"
+        placeholder="Detalhes do pedido, informações extras, etc."
+      ></textarea>
+
+      <button type="submit">Enviar pedido pelo WhatsApp</button>
+    </form>
+
+    <p class="aviso">
+      Ao clicar em enviar, você será direcionado(a) para o WhatsApp com a
+      mensagem já pronta.
+    </p>
+  </div>
+
+  <script>
+    // 1) TROQUE PELO SEU NÚMERO (somente números, com DDI e DDD)
+    // Exemplo: Brasil (55) + DDD 11 + número 91234-5678 => "5511912345678"
+    const numeroWhatsApp = "5511999999999";
+
+    // Define a data mínima (amanhã)
+    let dataMinimaISO = "";
+    window.addEventListener("DOMContentLoaded", () => {
+      const dataInput = document.getElementById("data");
+      const hoje = new Date();
+      hoje.setDate(hoje.getDate() + 1); // amanhã
+
+      const ano = hoje.getFullYear();
+      const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+      const dia = String(hoje.getDate()).padStart(2, "0");
+
+      dataMinimaISO = `${ano}-${mes}-${dia}`;
+      dataInput.min = dataMinimaISO;
+    });
+
+    // Sabores doces e salgados
+    const saboresDoces = [
+      "Doce de leite",
+      "Chocolate",
+      "Misto (doce de leite e chocolate)",
+      "Goiabada",
+    ];
+
+    const saboresSalgados = [
+      "Presunto e queijo",
+      "Frango",
+      "Quatro queijos",
+    ];
+
+    const produtoSelect = document.getElementById("produto");
+    const saborSelect = document.getElementById("sabor");
+
+    // Atualiza opções de sabor conforme o produto
+    produtoSelect.addEventListener("change", () => {
+      const produto = produtoSelect.value;
+
+      // Limpa opções atuais
+      saborSelect.innerHTML = "";
+      saborSelect.disabled = false;
+      saborSelect.required = true;
+
+      if (produto === "Pão de bolinha doce") {
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = "Selecione o sabor doce";
+        placeholder.disabled = true;
+        placeholder.selected = true;
+        saborSelect.appendChild(placeholder);
+
+        saboresDoces.forEach((s) => {
+          const opt = document.createElement("option");
+          opt.value = s;
+          opt.textContent = s;
+          saborSelect.appendChild(opt);
+        });
+      } else if (produto === "Pão de bolinha salgado") {
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = "Selecione o sabor salgado";
+        placeholder.disabled = true;
+        placeholder.selected = true;
+        saborSelect.appendChild(placeholder);
+
+        saboresSalgados.forEach((s) => {
+          const opt = document.createElement("option");
+          opt.value = s;
+          opt.textContent = s;
+          saborSelect.appendChild(opt);
+        });
+      } else {
+        // Produto "Outro" ou vazio → desativa sabor
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = "Não se aplica (produto diferente)";
+        placeholder.selected = true;
+        saborSelect.appendChild(placeholder);
+        saborSelect.disabled = true;
+        saborSelect.required = false;
+      }
+    });
+
+    // Mostra/esconde campos de retirada/entrega
+    const formaSelect = document.getElementById("forma");
+    const campoRetirada = document.getElementById("campo-retirada");
+    const campoEntrega = document.getElementById("campo-entrega");
+
+    formaSelect.addEventListener("change", () => {
+      const valor = formaSelect.value;
+      if (valor === "retirada") {
+        campoRetirada.style.display = "block";
+        campoEntrega.style.display = "none";
+      } else if (valor === "entrega") {
+        campoRetirada.style.display = "none";
+        campoEntrega.style.display = "block";
+      } else {
+        campoRetirada.style.display = "none";
+        campoEntrega.style.display = "none";
+      }
+    });
+
+    function enviarWhatsApp(event) {
+      event.preventDefault();
+
+      const nome = document.getElementById("nome").value.trim();
+      const telefone = document.getElementById("telefone").value.trim();
+      const produto = document.getElementById("produto").value;
+      const sabor = saborSelect.value;
+      const quantidade = document
+        .getElementById("quantidade")
+        .value.trim();
+      const forma = document.getElementById("forma").value;
+      const unidade = document.getElementById("unidade").value;
+      const endereco = document.getElementById("endereco").value.trim();
+      const dataSelecionada = document.getElementById("data").value;
+      const horario = document.getElementById("horario").value;
+      const observacoes = document
+        .getElementById("observacoes")
+        .value.trim();
+
+      // Sabor é obrigatório somente se for pão de bolinha
+      const saborObrigatorio =
+        produto === "Pão de bolinha doce" ||
+        produto === "Pão de bolinha salgado";
+
+      if (!nome || !telefone || !produto || !quantidade || !forma || !dataSelecionada || !horario) {
+        alert("Por favor, preencha todos os campos obrigatórios.");
+        return;
+      }
+
+      if (saborObrigatorio && !sabor) {
+        alert("Selecione o sabor do seu pão de bolinha.");
+        return;
+      }
+
+      // Validação específica de retirada/entrega
+      if (forma === "retirada" && !unidade) {
+        alert("Escolha a unidade para retirada (Matriz ou Vila Nova).");
+        return;
+      }
+
+      if (forma === "entrega" && !endereco) {
+        alert("Informe o endereço completo para entrega.");
+        return;
+      }
+
+      // Validação de data: pelo menos 1 dia de antecedência
+      if (dataMinimaISO && dataSelecionada < dataMinimaISO) {
+        alert("Para este produto, os pedidos precisam ser feitos com pelo menos 1 dia de antecedência.");
+        return;
+      }
+
+      // Validação de horário (07:30–20:00)
+      if (horario < "07:30" || horario > "20:00") {
+        alert("O horário deve ser entre 07:30 e 20:00.");
+        return;
+      }
+
+      // Formata data para DD/MM/AAAA
+      const dataFormatada = new Date(dataSelecionada).toLocaleDateString("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+      });
+
+      // Texto de forma de recebimento
+      let formaTexto = "";
+      if (forma === "retirada") {
+        formaTexto = `Retirada na unidade: ${unidade}`;
+      } else if (forma === "entrega") {
+        formaTexto = `Entrega no endereço: ${endereco}`;
+      }
+
+      let mensagem = `Olá! Quero fazer um pedido.%0A%0A`;
+      mensagem += `Nome: ${nome}%0A`;
+      mensagem += `Telefone: ${telefone}%0A`;
+      mensagem += `Produto: ${produto}%0A`;
+
+      if (saborObrigatorio && sabor) {
+        mensagem += `Sabor: ${sabor}%0A`;
+      }
+
+      mensagem += `Quantidade: ${quantidade}%0A`;
+      mensagem += `Forma de recebimento: ${formaTexto}%0A`;
+      mensagem += `Data desejada: ${dataFormatada}%0A`;
+      mensagem += `Horário aproximado: ${horario}%0A`;
+      mensagem += `Observações: ${observacoes ? observacoes : "Nenhuma."}`;
+
+      const url = `https://wa.me/${numeroWhatsApp}?text=${mensagem}`;
+
+      window.open(url, "_blank");
+    }
+  </script>
+</body>
+</html>
