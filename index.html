@@ -390,6 +390,18 @@
       if (dataMinimaISO && dataSelecionada < dataMinimaISO) {
         alert("Para este produto, os pedidos precisam ser feitos com pelo menos 1 dia de antecedência.");
         return;
+       // Impedir seleção de domingos
+  
+dataInput.addEventListener("input", () => {
+  const selecionada = new Date(dataInput.value);
+  const dia = selecionada.getDay(); // 0 = domingo
+
+  if (dia === 0) {
+    alert("Não fazemos entregas/retiradas aos domingos. Escolha outro dia.");
+    dataInput.value = ""; // limpa a seleção inválida
+  }
+});
+
       }
 
       // Validação de horário (07:30–20:00)
@@ -433,4 +445,5 @@
   </script>
 </body>
 </html>
+
 
